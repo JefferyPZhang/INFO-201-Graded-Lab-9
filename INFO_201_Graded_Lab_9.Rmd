@@ -1,0 +1,86 @@
+---
+title: "INFO_201_Graded_Lab_9"
+author: "Jeffery Zhang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ---------- Graded Lab #9: Cleaning and Reshaping ----------
+
+```{r}
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(tidyr)
+```
+
+## ---------- 1: Dawg Dash Running Times ----------
+
+## 1.1
+```{r}
+dash_data <- read_delim("C:/Users/xuz-t/OneDrive/Documents/INFO_201_Scripts/Graded_Lab_9/data/dawgs-dash-5k-2023.csv")
+head(dash_data)
+```
+
+## 1.2
+
+The category variable is of type character, while time is of type time (hh:mm:ss).
+
+## 1.3
+
+```{r}
+dash_data <- read_delim("C:/Users/xuz-t/OneDrive/Documents/INFO_201_Scripts/Graded_Lab_9/data/dawgs-dash-5k-2023.csv",
+col_types = list(time = "character"))
+dash_data %>% mutate(time = ifelse(str_count(time, ":") == 1, paste0("00:", time), time))
+```
+
+## 1.4
+```{r}
+head(dash_data, n = 3)
+tail(dash_data, n = 3)
+```
+
+Yes, this data looks sensible.
+
+## 1.5
+```{r}
+dash_data$numeric_time <- as.numeric(substr(dash_data$time, 1, 2)) * 60 +
+                          as.numeric(substr(dash_data$time, 4, 5))
+hist(dash_data$numeric_time, 
+     breaks = 20,
+     col = "blue",
+     main = "Histogram of Running Times",
+     xlab = "Time (minutes)")
+xlabel <- "Time (minutes)"
+ylabel <- "Frequency"
+title <- "Histogram of Running Times"
+hist(dash_data$numeric_time, breaks = 20, col = "blue", main = title, xlab = xlabel, ylab = ylabel)
+```
+## ---------- 2: Reshape ----------
+
+## 2.1
+```{r}
+tropo_data <- read_delim("C:/Users/xuz-t/OneDrive/Documents/INFO_201_Scripts/Graded_Lab_9/data/UAH-lower-troposphere-wide.csv")
+tropo_data <- tropo_data[, c("year", "month", "globe", "nopol", "sopol")]
+head(tropo_data)
+```
+## 2.2
+```{r}
+tropo_data <- tropo_data %>%
+  pivot_longer(cols = c("globe", "nopol", "sopol"),
+               names_to = "region",
+               values_to = "temperature")
+tropo_long_data <- tropo_data
+head(tropo_data)
+```
+## 2.3
+```{r}
+tropo_data <- tropo_data %>%
+  pivot_wider(names_from = region, values_from = temperature)
+head(tropo_data)
+```
